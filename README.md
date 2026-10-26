@@ -22,14 +22,17 @@ index.html               単一ファイルアプリ（CSS/JS インライン）
 manifest.webmanifest     PWA マニフェスト
 sw.js                    Service Worker（オフライン対応・更新管理）
 icons/                   アイコン類（PNG 192/512/maskable/apple-touch + SVG favicon）
-Makefile                 serve / icons / bump / check / dist / deploy-netlify / clean
-_headers                 Netlify・CF Pages 用ヘッダ（sw.js no-cache 等）
+Makefile                 serve / icons / bump / check / bump-guard / dist /
+                         dist-pages / verify / deploy-netlify / clean
+_headers                 Netlify・CF Pages 用ヘッダ（sw.js no-cache 等。GH Pages では除外）
 netlify.toml             Netlify git連携用ビルド設定
-.github/workflows/       GitHub Pages 自動デプロイ
+.github/workflows/       GitHub Pages 自動デプロイ（bump ガード・公開検証付き）
 tools/make_icons.py      アイコン生成スクリプト（Python 標準ライブラリのみ）
 tools/bump_version.py    sw.js の VERSION をインクリメント
 tools/check_deploy.py    デプロイ前チェックゲート
+tools/verify_live.py     公開サイトの検証・bump 忘れガード（ホスト共通）
 tools/deploy_netlify.py  Netlify REST API デプロイ（CLI不要）
+docs/DEPLOY_GITHUB_PAGES.md  GitHub Pages デプロイマニュアル
 docs/DEPLOY_NETLIFY.md   Netlify デプロイマニュアル
 .aidoc/                  開発プロセスドキュメント
 ```
@@ -58,10 +61,15 @@ make dist      # デプロイ前チェック → dist/ へ公開ファイルを�
 #### GitHub Pages（自動デプロイ・稼働中）
 
 **https://ririumu.github.io/sixmax-range/** で公開中です。
+詳細手順は **[GitHub Pages デプロイマニュアル](docs/DEPLOY_GITHUB_PAGES.md)** を参照。
 
 `.github/workflows/deploy.yml` により main への push で自動デプロイされます。
-（Pages の build_type=workflow は設定済み。別リポジトリで利用する場合は
-Settings → Pages → Source を **GitHub Actions** に設定してください）
+
+- 工程: `make dist-pages`（チェック＋集約）→ `make bump-guard` → デプロイ → `make verify`
+- VERSION を上げ忘れたままアプリを変えた push は bump ガードで止まります
+- `.aidoc/`・`docs/`・`README.md`・`AGENTS.md` のみの変更では再デプロイしません
+  （手動実行: `gh workflow run deploy.yml`）
+- 別リポジトリで利用する場合は Settings → Pages → Source を **GitHub Actions** に設定
 
 #### Netlify（稼働中）
 
@@ -70,10 +78,11 @@ Settings → Pages → Source を **GitHub Actions** に設定してください
 
 ```sh
 make deploy-netlify   # check → dist → REST API で zip デプロイ
+make verify LIVE_URL=https://rfi-range-grid.netlify.app/   # 公開検証
 ```
 
 - 認証: `netlify` CLI のログイン情報、または環境変数 `NETLIFY_AUTH_TOKEN`
-- サイト情報は `.netlify/state.json` に保持（2回目以降は同一サイトへデプロイ）
+- サイト情報は `.netlify/state.json` に保持（無い場合はアカウント内の同名サイトを再利用）
 - `netlify.toml` 同梱のため、Netlify UI で GitHub 連携すれば自動デプロイにも対応
 - `_headers` が同梱され、sw.js の no-cache・セキュリティヘッダが自動適用
 
@@ -90,13 +99,20 @@ make bump
 
 # 2. デプロイ前チェック（CIでも自動実行）
 make check
+make bump-guard   # 公開版と比較して bump 忘れを検出
 
-# 3. パッケージ & デプロイ
-make dist
+# 3. デプロイ（GitHub Pages は push で自動。Netlify は make deploy-netlify）
+git push
+
+# 4. 公開サイトがローカルと一致するか確認（CIでも自動実行）
+make verify
 ```
 
+`make bump-guard` / `make verify` の対象は既定で GitHub Pages。
+`LIVE_URL=...` で別ホストを指定できます。
+
 その他のターゲット: `make serve`（ローカルプレビュー）、`make icons`、
-`make clean`。
+`make dist`（`dist/` 生成のみ）、`make clean`。
 
 ### アイコン再生成
 
@@ -116,6 +132,7 @@ make icons   # または python3 tools/make_icons.py
 `index.html` などを変更したら `make bump` で `sw.js` の `VERSION`
 を上げてください（`tools/bump_version.py` が自動インクリメント）。
 新キャッシュが配信され、利用中の画面に更新トーストが表示されます。
+上げ忘れた場合は GitHub Pages の CI（bump ガード）がデプロイを止めます。
 
 ## レンジデータについて
 
