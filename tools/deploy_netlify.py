@@ -8,7 +8,8 @@ Auth resolution order:
 Site resolution order:
   1. .netlify/state.json {"siteId": ...}  (written after first deploy)
   2. NETLIFY_SITE_ID env var
-  3. create a new site (--name NAME, default rfi-range-grid)
+  3. existing site named NAME in the account (fresh clone without state.json)
+  4. create a new site (--name NAME, default rfi-range-grid)
 
 Usage: python3 tools/deploy_netlify.py [--name NAME]
 Requires: dist/ already built (run `make dist` first, or `make deploy-netlify`).
@@ -18,6 +19,7 @@ import io
 import json
 import os
 import sys
+import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -70,7 +72,10 @@ def ensure_site(token: str, name: str) -> dict:
     sid = os.environ.get("NETLIFY_SITE_ID")
     if sid:
         return req(token, "GET", f"/sites/{sid}")
-    site = req(token, "POST", "/sites", {"name": name})
+    # state.json is gitignored, so a fresh clone looks the site up by name
+    sites = req(token, "GET", f"/sites?filter=all&name={urllib.parse.quote(name)}")
+    found = [s for s in sites if s.get("name") == name]
+    site = found[0] if found else req(token, "POST", "/sites", {"name": name})
     STATE.parent.mkdir(exist_ok=True)
     STATE.write_text(json.dumps({"siteId": site["id"]}))
     return site

@@ -52,3 +52,20 @@
    - paths-ignore: .aidoc/** docs/** README.md AGENTS.md（ドキュメントのみの push で再デプロイしない）
    - `make dist-pages` = dist から `_headers` を除去（8ファイル）。Netlify 用 `make dist` は従来通り
    - YAML 妥当性: ruby psych で steps 7件をパース確認（actionlint 未導入のため実 CI で最終確認）
+5. push → CI → 公開検証、Netlify 同版化（`iter5/05-netlify-fresh-clone`）
+   - `git push origin main`（87ee16f..143914f）→ run 40251269353 success（全ステップ ✓）
+     - Node.js 20 deprecation annotation は解消。残る annotation は Ubuntu 26 移行告知のみ
+     - CI 内 bump-guard: `VERSION rfi-v1 (live) -> rfi-v2 (local)` ok
+     - CI 内 verify: 9 パス全一致・dev ファイル7種非公開（`_headers` 露出解消）
+   - ローカルから `make verify` 再実行 → 一致
+   - 実ブラウザ（Chrome headless）で https://ririumu.github.io/sixmax-range/ を検証:
+     controller 取得、scope=/sixmax-range/、updateViaCache=none、cache=rfi-v2 に8資産、
+     manifest id/start_url 解決先=/sixmax-range/、オフライン再読込でグリッド196セル表示、JSエラー0
+   - Netlify 再デプロイで不具合発覚: `make deploy-netlify` → `POST /sites -> 422 subdomain must be unique`
+     - 原因: 本作業ディレクトリは新規クローンで、gitignore 対象の `.netlify/state.json` が無い
+       → 既存サイトを見つけられず同名サイト新規作成を試みていた
+     - 修正: state.json / NETLIFY_SITE_ID が無いとき `GET /sites?filter=all&name=` で同名サイトを
+       検索して再利用し state.json を再生成
+     - 再実行 → 既存サイト（siteId 2311da9f…、AUDIT_3 と同一）へ ready
+   - `make verify LIVE_URL=https://rfi-range-grid.netlify.app/` → rfi-v2 一致、
+     sw.js `cache-control: no-cache`（_headers 適用継続）、実ブラウザでオフライン動作 ok
