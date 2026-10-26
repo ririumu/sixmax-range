@@ -41,3 +41,14 @@
      - D: 同 worktree で GH Pages smoke → `_headers: dev file is publicly served` を検出 exit 1
      - E: 同 worktree で Netlify smoke → 全件 ok（ホスト非依存であることを確認）
      - F: 404 サイト → 初回デプロイ扱いで ok / 名前解決不可 → warn で skip
+4. `iter5/04-workflow`: deploy.yml 刷新 + `make dist-pages`
+   - アクションを Node 24 版へ: checkout@v7 / configure-pages@v6 /
+     upload-pages-artifact@v5 / deploy-pages@v5（release notes 確認: 破壊的変更は
+     pull_request_target 系・dotfile 除外のみで本ワークフローに影響なし）
+   - 工程: checkout → configure-pages(base_url) → `make dist-pages` →
+     `make bump-guard`(LIVE_URL=base_url) → upload → deploy → `make verify`(LIVE_URL=page_url)
+   - LIVE_URL は `env:` 経由で渡す（`run:` への式埋め込みを避ける）
+   - concurrency cancel-in-progress: false（GitHub 公式スターター準拠）
+   - paths-ignore: .aidoc/** docs/** README.md AGENTS.md（ドキュメントのみの push で再デプロイしない）
+   - `make dist-pages` = dist から `_headers` を除去（8ファイル）。Netlify 用 `make dist` は従来通り
+   - YAML 妥当性: ruby psych で steps 7件をパース確認（actionlint 未導入のため実 CI で最終確認）

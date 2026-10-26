@@ -3,6 +3,12 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # process/docs-only changes do not touch the published app
+    paths-ignore:
+      - ".aidoc/**"
+      - "docs/**"
+      - "README.md"
+      - "AGENTS.md"
   workflow_dispatch:
 
 permissions:
@@ -10,9 +16,10 @@ permissions:
   pages: write
   id-token: write
 
+# one deployment at a time; never cancel a deployment already in progress
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -21,18 +28,31 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      # make dist runs the pre-deploy check gate, then packages
-      # only the public app files (excludes .aidoc/, tools/, docs)
+      - uses: actions/configure-pages@v6
+        id: pages
+
+      # make dist-pages runs the pre-deploy check gate, then packages
+      # only the public app files (excludes .aidoc/, tools/, docs, _headers)
       - name: Build dist
-        run: make dist
+        run: make dist-pages
 
-      - uses: actions/configure-pages@v5
+      # refuse to ship changed app files under an unchanged sw.js VERSION
+      - name: Bump guard
+        run: make bump-guard
+        env:
+          LIVE_URL: ${{ steps.pages.outputs.base_url }}
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
+
+      # live files must match this commit byte-for-byte, dev files private
+      - name: Verify live site
+        run: make verify
+        env:
+          LIVE_URL: ${{ steps.deployment.outputs.page_url }}

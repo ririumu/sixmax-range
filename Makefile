@@ -5,7 +5,7 @@ LIVE_URL ?= https://ririumu.github.io/sixmax-range/
 APP_FILES := index.html manifest.webmanifest sw.js
 ICON_FILES := $(wildcard icons/*.png icons/*.svg)
 
-.PHONY: serve icons bump check bump-guard dist deploy-netlify verify clean
+.PHONY: serve icons bump check bump-guard dist dist-pages deploy-netlify verify clean
 
 ## ローカルプレビュー (PORT=8000 で変更可)
 serve:
@@ -35,6 +35,10 @@ dist: check
 	cp $(ICON_FILES) dist/icons/
 	@if [ -f _headers ]; then cp _headers dist/; fi
 	@echo "dist/ ready ($$(find dist -type f | wc -l | tr -d ' ') files)"
+
+## GitHub Pages 用 dist（Pages は _headers を解釈せず公開ファイルになるため除外）
+dist-pages: dist
+	rm -f dist/_headers
 
 ## Netlify へデプロイ（dist ビルド込み・REST API 使用）
 deploy-netlify: dist
