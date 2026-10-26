@@ -30,3 +30,14 @@
      - 修正後コード: t-B にビルドB（3/3回）= 解消
    - 観察: 初回訪問時は clients.claim() → controllerchange でアプリが1回自動リロードする
      （既存挙動・全ホスト共通・実害は軽微のため本イテレーションでは変更せず）
+3. `iter5/03-verify-live`: `tools/verify_live.py` + `make verify` / `make bump-guard`
+   - smoke: sw.js + ASSETS 全件が 200 かつローカルとバイト一致、開発ファイル7種が
+     非公開（200 かつ同一バイトなら漏洩扱い。SPA フォールバックは誤検知しない）。10秒×12回リトライ
+   - bump-guard: 公開版 VERSION == ローカル VERSION なのにアプリファイルが異なれば失敗
+   - 実サイトでの検証結果:
+     - A: ローカル rfi-v2 vs GH Pages rfi-v1 → ok（bump 済み）
+     - B: VERSION を rfi-v1 に戻した状態（bump 忘れ再現）→ FAILED（sw.js/index.html 検出）exit 1
+     - C: デプロイ済みコミット 87ee16f の worktree → ok（同一内容の再デプロイ）
+     - D: 同 worktree で GH Pages smoke → `_headers: dev file is publicly served` を検出 exit 1
+     - E: 同 worktree で Netlify smoke → 全件 ok（ホスト非依存であることを確認）
+     - F: 404 サイト → 初回デプロイ扱いで ok / 名前解決不可 → warn で skip
