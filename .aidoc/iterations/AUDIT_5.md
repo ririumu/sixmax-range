@@ -86,7 +86,11 @@
    - README: ファイル構成（verify_live / GH Pages マニュアル / Makefile 新ターゲット）、
      GH Pages 節（マニュアル導線・CI 工程・bump ガード・paths-ignore）、Netlify 節（verify・
      state.json 再生成）、リリース手順（bump-guard / push / verify）、更新のしかた
-   - 本ブランチはドキュメントのみ → push 後に Pages ワークフローが起動しないこと（paths-ignore）を確認
+   - push 143914f..dc50de2 は item 5 の tools/deploy_netlify.py 変更を含むため paths-ignore 対象外
+     → run 40251978038 起動・success。bump-guard は `VERSION rfi-v2 unchanged and app files
+     identical (re-deploy)`、verify 一致（同一内容の再デプロイが正しく通ることを確認）
+8. `iter5/08-audit-close`: 本 AUDIT の訂正（.aidoc のみ）
+   - push 後、この HEAD に対して Pages ワークフローが起動しないこと（paths-ignore）を確認
 
 ## 判断メモ
 - `_headers` は Netlify/CF Pages では必要なので dist から消さず、GH Pages 用に dist-pages を分けた
