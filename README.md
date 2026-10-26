@@ -57,7 +57,7 @@ make dist      # デプロイ前チェック → dist/ へ公開ファイルを�
 
 #### GitHub Pages（自動デプロイ・稼働中）
 
-**https://ririumu.github.io/poker_6max_rfi_range_grid/** で公開中です。
+**https://ririumu.github.io/sixmax-range/** で公開中です。
 
 `.github/workflows/deploy.yml` により main への push で自動デプロイされます。
 （Pages の build_type=workflow は設定済み。別リポジトリで利用する場合は
