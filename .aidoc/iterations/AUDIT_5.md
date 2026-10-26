@@ -20,3 +20,13 @@
 
 ## 作業経過（branch -> commit -> merge）
 1. `iter5/01-init`: USERINPUT 追記・_PLAN_5・AUDIT_5
+2. `iter5/02-sw-cache`: SW の GitHub Pages キャッシュ対策 + VERSION rfi-v1→rfi-v2
+   - sw.js install: `c.addAll(ASSETS.map(u => new Request(u, {cache:"reload"})))`
+   - index.html: `register("sw.js", {updateViaCache:"none"})`（SW 本体の更新確認も明示的に HTTP キャッシュ迂回）
+   - 再現テスト（Chrome headless + playwright-core、全応答 `Cache-Control: max-age=600` を
+     付ける GH Pages 模擬サーバで `/sixmax-range/` サブパス配信。ビルドA配信→制御下で
+     ビルドB を「デプロイ」→再訪問→新キャッシュ t-B 内の `./` を検査）:
+     - 修正前コード: t-B に **ビルドA の index.html** がプリキャッシュ（3/3回）= 不具合再現
+     - 修正後コード: t-B にビルドB（3/3回）= 解消
+   - 観察: 初回訪問時は clients.claim() → controllerchange でアプリが1回自動リロードする
+     （既存挙動・全ホスト共通・実害は軽微のため本イテレーションでは変更せず）
