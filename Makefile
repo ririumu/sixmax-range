@@ -1,10 +1,11 @@
 PY ?= python3
 PORT ?= 8000
+LIVE_URL ?= https://ririumu.github.io/sixmax-range/
 
 APP_FILES := index.html manifest.webmanifest sw.js
 ICON_FILES := $(wildcard icons/*.png icons/*.svg)
 
-.PHONY: serve icons bump check dist deploy-netlify clean
+.PHONY: serve icons bump check bump-guard dist deploy-netlify verify clean
 
 ## ローカルプレビュー (PORT=8000 で変更可)
 serve:
@@ -22,6 +23,10 @@ bump:
 check:
 	$(PY) tools/check_deploy.py
 
+## デプロイ前: VERSION 据え置きでアプリが変わっていないか公開版と比較
+bump-guard:
+	$(PY) tools/verify_live.py --bump-guard $(LIVE_URL)
+
 ## 公開用ファイルを dist/ に集約（dist/ をそのまま静的ホストへアップロード可能）
 dist: check
 	rm -rf dist
@@ -34,6 +39,10 @@ dist: check
 ## Netlify へデプロイ（dist ビルド込み・REST API 使用）
 deploy-netlify: dist
 	$(PY) tools/deploy_netlify.py
+
+## 公開サイトがローカルと一致するか検証（LIVE_URL=... で対象変更）
+verify:
+	$(PY) tools/verify_live.py $(LIVE_URL)
 
 clean:
 	rm -rf dist

@@ -28,7 +28,7 @@ GitHub Pages を「push すれば安全に更新が届き、公開結果が自�
 - [x] 1. イテレーション初期化（USERINPUT追記・_PLAN_5・AUDIT_5）
 - [x] 2. SW の GitHub Pages キャッシュ対策（precache を `cache:'reload'`、
        register に `updateViaCache:'none'`）+ `make bump`
-- [ ] 3. `tools/verify_live.py`（公開検証 smoke + bump忘れガード）+ `make verify`
+- [x] 3. `tools/verify_live.py`（公開検証 smoke + bump忘れガード）+ `make verify`
 - [ ] 4. ワークフロー刷新（Node 24 版アクション、`make dist-pages` で `_headers`
        除外、bump ガード → デプロイ → smoke、concurrency、paths-ignore）
 - [ ] 5. push → CI 実行確認 → 公開検証（GH Pages）＋ Netlify も同版へ再デプロイ
