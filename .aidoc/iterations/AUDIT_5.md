@@ -82,3 +82,17 @@
    - README: GitHub Pages の公開 URL を新 URL に修正
    - 旧名 `poker_6max` の残存は GH Pages マニュアル内の改名事例のみ（意図的）。
      過去イテレーションの記録（AUDIT/REPORT 1〜3）は当時の証跡として改変しない
+7. `iter5/07-docs`: README 見直し・OVERVIEW・REPORT_5
+   - README: ファイル構成（verify_live / GH Pages マニュアル / Makefile 新ターゲット）、
+     GH Pages 節（マニュアル導線・CI 工程・bump ガード・paths-ignore）、Netlify 節（verify・
+     state.json 再生成）、リリース手順（bump-guard / push / verify）、更新のしかた
+   - 本ブランチはドキュメントのみ → push 後に Pages ワークフローが起動しないこと（paths-ignore）を確認
+
+## 判断メモ
+- `_headers` は Netlify/CF Pages では必要なので dist から消さず、GH Pages 用に dist-pages を分けた
+- verify は「200 かつバイト一致」で判定。VERSION 文字列比較だけより強く、CDN 反映途中も検出できる
+- 開発ファイル漏洩は「200 かつローカルと同一バイト」で判定（SPA フォールバックの誤検知回避）
+- bump-guard は到達不能時は warn で通す（一時的なネットワーク障害でデプロイを止めない）
+- 旧 URL 用の転送リポジトリは作らない（`ririumu/poker_6max_rfi_range_grid` を新規作成すると
+  GitHub の改名転送が無効になり、旧 git URL を使う clone/push が壊れる）
+- Netlify の再デプロイは AGENTS.md の自律方針に基づき実施（既存サイトへの同一アプリ・新版の配信）

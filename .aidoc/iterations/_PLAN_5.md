@@ -33,7 +33,7 @@ GitHub Pages を「push すれば安全に更新が届き、公開結果が自�
        除外、bump ガード → デプロイ → smoke、concurrency、paths-ignore）
 - [x] 5. push → CI 実行確認 → 公開検証（GH Pages）＋ Netlify も同版へ再デプロイ
 - [x] 6. `docs/DEPLOY_GITHUB_PAGES.md` マニュアル作成 + 旧URL/旧リポジトリ名の修正
-- [ ] 7. README 見直し・OVERVIEW・AUDIT_5・REPORT_5 更新 + push
+- [x] 7. README 見直し・OVERVIEW・AUDIT_5・REPORT_5 更新 + push
 
 ## 設計方針
 - アプリは相対パスのみ（サブパス `/sixmax-range/` 配信に既に対応）を維持
