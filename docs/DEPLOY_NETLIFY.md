@@ -52,6 +52,8 @@ make deploy-netlify
 初回実行時にサイト `rfi-range-grid` が自動作成され、
 サイトIDが `.netlify/state.json` に保存されます。
 2回目以降は同一サイトへ差し替えデプロイされます。
+（新しくクローンした環境など state.json が無い場合も、
+アカウント内の同名サイトを探して再利用します）
 
 > 別名でサイトを作りたい場合:
 > `python3 tools/deploy_netlify.py --name your-site-name`
@@ -71,7 +73,7 @@ netlify deploy --dir=dist --prod
 ### 方法 C: GitHub 連携（自動デプロイ）
 
 1. Netlify 管理画面 → **Add new site** → **Import an existing project**
-2. GitHub を選択し `ririumu/poker_6max_rfi_range_grid` を接続
+2. GitHub を選択し `ririumu/sixmax-range` を接続
 3. ビルド設定は `netlify.toml` が自動適用:
    - Build command: `make dist`
    - Publish directory: `dist`
@@ -90,6 +92,16 @@ make dist
 ---
 
 ## 3. デプロイ後の検証
+
+```sh
+make verify LIVE_URL=https://rfi-range-grid.netlify.app/
+```
+
+`tools/verify_live.py` が、SW の全プリキャッシュ対象が 200 でローカルと
+バイト一致すること、開発用ファイル（`_headers` 等）が非公開であることを
+確認します（詳細は [GitHub Pages マニュアル](DEPLOY_GITHUB_PAGES.md#5-検証)）。
+
+個別に確認する場合:
 
 ```sh
 # 1. 全リソースが 200 を返すか
@@ -136,7 +148,8 @@ make deploy-netlify
 ### `.netlify/state.json`
 
 サイトIDを保持するローカル状態ファイル（gitignore 済み）。
-削除すると次回デプロイ時に新規サイトが作られてしまうので注意。
+削除しても、次回デプロイ時にアカウント内の同名サイト（`--name`、
+既定 `rfi-range-grid`）を探して再生成します。
 
 ### サイト名の変更・独自ドメイン
 
@@ -157,7 +170,7 @@ Netlify UI → Deploys → 過去デプロイの **Publish deploy** で
 | `error: no Netlify token` | `NETLIFY_AUTH_TOKEN` を設定するか `netlify login` を実行 |
 | `error: dist/ not found` | `make dist` を先に実行（`make deploy-netlify` なら自動） |
 | サイト名が取れない | `rfi-range-grid` は取得済み。`--name` で別名を指定 |
-| `POST /sites -> 422` | 名前の重複または不正。別名で再試行 |
+| `POST /sites -> 422` | 名前が他アカウントで使用済み、または不正。別名で再試行（自アカウントの同名サイトは自動で再利用） |
 | デプロイ後も旧画面 | `make bump` 忘れ。VERSIONを上げて再デプロイ。それでも駄目なら DevTools → Application → Unregister SW |
 | `_headers` が効かない | `dist/` に `_headers` が含まれているか確認（`make dist` は自動同梱） |
 | API 403 | トークン失効/権限不足 → 新しい PAT を発行 |
@@ -177,5 +190,5 @@ Netlify UI → Deploys → 過去デプロイの **Publish deploy** で
 | サイト名 | `rfi-range-grid` |
 | URL | https://rfi-range-grid.netlify.app |
 | サイトID | `.netlify/state.json` 参照（gitignore 済み） |
-| デプロイ実績 | REST API zip deploy ×2 回、双方 ready |
-| 並行稼働 | GitHub Pages（push で自動デプロイ）も稼働中 |
+| デプロイ実績 | REST API zip deploy ×4 回、すべて ready（最新は `rfi-v2`） |
+| 並行稼働 | GitHub Pages（https://ririumu.github.io/sixmax-range/ 、push で自動デプロイ、[マニュアル](DEPLOY_GITHUB_PAGES.md)） |

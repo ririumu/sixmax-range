@@ -69,3 +69,16 @@
      - 再実行 → 既存サイト（siteId 2311da9f…、AUDIT_3 と同一）へ ready
    - `make verify LIVE_URL=https://rfi-range-grid.netlify.app/` → rfi-v2 一致、
      sw.js `cache-control: no-cache`（_headers 適用継続）、実ブラウザでオフライン動作 ok
+6. `iter5/06-pages-manual`: `docs/DEPLOY_GITHUB_PAGES.md` 新規 + 旧名参照の修正
+   - 構成: 仕組み（CI 工程図）→ 初期設定 → 更新手順 → GH Pages 固有の制約と対策表 →
+     検証（verify / bump-guard / ブラウザ）→ 改名・独自ドメイン → ロールバック →
+     トラブルシュート → 現状
+   - ロールバック手順: 当初 `revert → make bump` と書いたが、revert で戻った VERSION から
+     bump すると問題版と同じキャッシュ名を再利用し得るため `bump_version.py --set` で
+     公開中より大きい値を明示する手順に修正
+   - 「セキュリティヘッダ不可は許容」の根拠確認: index.html に外部 URL・form/input なし
+   - DEPLOY_NETLIFY.md: リポジトリ名、state.json 無しでも同名サイト再利用、`make verify`、
+     422 の説明、デプロイ実績×4、GH Pages への相互リンク
+   - README: GitHub Pages の公開 URL を新 URL に修正
+   - 旧名 `poker_6max` の残存は GH Pages マニュアル内の改名事例のみ（意図的）。
+     過去イテレーションの記録（AUDIT/REPORT 1〜3）は当時の証跡として改変しない
